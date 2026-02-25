@@ -3,10 +3,15 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+type AuthorBook = {
+  id: number;
+  title: string;
+};
+
 type Author = {
   id: number;
   fullname: string;
-  books: unknown[];
+  books: AuthorBook[];
 };
 
 type SortField = "id" | "fullname";
@@ -61,8 +66,17 @@ export default async function AuthorsPage({ searchParams }: AuthorsPageProps) {
   let authors: Author[] = [];
 
   try {
-    authors = await apiFetch<Author[]>("/api/v1/authors");
-    console.log("[AuthorsPage] /api/v1/authors", authors);
+    const response = await apiFetch<Author[]>("/api/v1/authors");
+    authors = response.map((author) => ({
+      ...author,
+      books: Array.isArray(author.books)
+        ? author.books.map((book) => ({
+            id: Number(book.id),
+            title: String(book.title),
+          }))
+        : [],
+    }));
+    console.log("[AuthorsPage] /api/v1/authors", JSON.stringify(authors, null, 2));
   } catch (error) {
     console.error("[AuthorsPage] Failed to fetch authors", error);
   }

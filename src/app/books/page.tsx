@@ -68,8 +68,17 @@ export default async function BooksPage({ searchParams }: BooksPageProps) {
   let books: Book[] = [];
 
   try {
-    books = await apiFetch<Book[]>("/api/v1/books");
-    console.log("[BooksPage] /api/v1/books", books);
+    const response = await apiFetch<Book[]>("/api/v1/books");
+    books = response.map((book) => ({
+      ...book,
+      authors: Array.isArray(book.authors)
+        ? book.authors.map((author) => ({
+            id: Number(author.id),
+            fullname: String(author.fullname),
+          }))
+        : [],
+    }));
+    console.log("[BooksPage] /api/v1/books", JSON.stringify(books, null, 2));
   } catch (error) {
     console.error("[BooksPage] Failed to fetch books", error);
   }
