@@ -62,7 +62,7 @@ export default async function PublishersPage({
 
   try {
     publishers = await apiFetch<Publisher[]>("/api/v1/publishers");
-    console.log("[PublishersPage] /api/v1/publishers", publishers);
+    // console.log("[PublishersPage] /api/v1/publishers", publishers);
   } catch (error) {
     console.error("[PublishersPage] Failed to fetch publishers", error);
   }
@@ -121,7 +121,9 @@ export default async function PublishersPage({
             ) : (
               sortedPublishers.map((publisher) => (
                 <tr key={publisher.id} className="border-t border-black/10">
-                  <td className="px-4 py-3 whitespace-nowrap">{publisher.id}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {publisher.id}
+                  </td>
                   <td className="px-4 py-3">{publisher.name}</td>
                 </tr>
               ))

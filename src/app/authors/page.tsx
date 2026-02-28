@@ -52,7 +52,7 @@ export default async function AuthorsPage({ searchParams }: AuthorsPageProps) {
           }))
         : [],
     }));
-    console.log("[AuthorsPage] /api/v1/authors", JSON.stringify(authors, null, 2));
+    // console.log("[AuthorsPage] /api/v1/authors", JSON.stringify(authors, null, 2));
   } catch (error) {
     console.error("[AuthorsPage] Failed to fetch authors", error);
   }
@@ -71,8 +71,14 @@ export default async function AuthorsPage({ searchParams }: AuthorsPageProps) {
   return (
     <section className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-3xl font-bold">Authors</h1>
-      <p className="mt-3 text-black/70">Manage and browse authors from your library.</p>
-      <AuthorsTable authors={sortedAuthors} sortField={sortField} sortOrder={sortOrder} />
+      <p className="mt-3 text-black/70">
+        Manage and browse authors from your library.
+      </p>
+      <AuthorsTable
+        authors={sortedAuthors}
+        sortField={sortField}
+        sortOrder={sortOrder}
+      />
     </section>
   );
 }

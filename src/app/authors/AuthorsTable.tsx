@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
 
 type AuthorBook = {
   id: number;
@@ -52,12 +53,44 @@ export default function AuthorsTable({
   sortField,
   sortOrder,
 }: AuthorsTableProps) {
+  const router = useRouter();
   const [selectedAuthorId, setSelectedAuthorId] = useState<number | null>(null);
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const selectedAuthor = useMemo(
     () => authors.find((author) => author.id === selectedAuthorId) ?? null,
     [authors, selectedAuthorId],
   );
+
+  async function handleDelete(authorId: number) {
+    try {
+      const response = await fetch(`/api/v1/authors/${authorId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        let message = `Delete failed (${response.status} ${response.statusText})`;
+
+        try {
+          const body = (await response.json()) as { message?: unknown };
+
+          if (typeof body.message === "string" && body.message.trim()) {
+            message = body.message;
+          }
+        } catch {
+          // Fall back to the HTTP status message when the response is not JSON.
+        }
+
+        window.alert(message);
+        return;
+      }
+
+      setSelectedAuthorId(null);
+      router.refresh();
+    } catch {
+      window.alert("Delete failed unexpectedly.");
+    }
+  }
 
   return (
     <>
@@ -107,6 +140,7 @@ export default function AuthorsTable({
                     <button
                       type="button"
                       className="text-sm font-medium underline-offset-2 hover:underline"
+                      disabled={isDeleting}
                       onClick={() =>
                         setSelectedAuthorId((currentId) =>
                           currentId === author.id ? null : author.id,
@@ -142,6 +176,7 @@ export default function AuthorsTable({
               <button
                 type="button"
                 className="rounded border border-black/15 px-2 py-1 text-sm hover:bg-black/5"
+                disabled={isDeleting}
                 onClick={() => setSelectedAuthorId(null)}
               >
                 Close
@@ -165,6 +200,24 @@ export default function AuthorsTable({
                   ))}
                 </ul>
               )}
+            </div>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isDeleting}
+                onClick={() => {
+                  if (!selectedAuthor) {
+                    return;
+                  }
+
+                  startDeleteTransition(() => {
+                    void handleDelete(selectedAuthor.id);
+                  });
+                }}
+              >
+                {isDeleting ? "Deleting..." : "Delete author"}
+              </button>
             </div>
           </article>
         </div>

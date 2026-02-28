@@ -54,7 +54,7 @@ export default async function BooksPage({ searchParams }: BooksPageProps) {
           }))
         : [],
     }));
-    console.log("[BooksPage] /api/v1/books", JSON.stringify(books, null, 2));
+    // console.log("[BooksPage] /api/v1/books", JSON.stringify(books, null, 2));
   } catch (error) {
     console.error("[BooksPage] Failed to fetch books", error);
   }
@@ -73,8 +73,14 @@ export default async function BooksPage({ searchParams }: BooksPageProps) {
   return (
     <section className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-3xl font-bold">Books</h1>
-      <p className="mt-3 text-black/70">Manage and browse books from your library.</p>
-      <BooksTable books={sortedBooks} sortField={sortField} sortOrder={sortOrder} />
+      <p className="mt-3 text-black/70">
+        Manage and browse books from your library.
+      </p>
+      <BooksTable
+        books={sortedBooks}
+        sortField={sortField}
+        sortOrder={sortOrder}
+      />
     </section>
   );
 }
