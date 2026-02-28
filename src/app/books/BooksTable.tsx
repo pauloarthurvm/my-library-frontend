@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
 
 type BookAuthor = {
   id: number;
@@ -54,12 +55,36 @@ export default function BooksTable({
   sortField,
   sortOrder,
 }: BooksTableProps) {
+  const router = useRouter();
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const selectedBook = useMemo(
     () => books.find((book) => book.id === selectedBookId) ?? null,
     [books, selectedBookId],
   );
+
+  async function handleDelete(bookId: number) {
+    setDeleteError(null);
+
+    try {
+      const response = await fetch(`/api/v1/books/${bookId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Delete failed (${response.status} ${response.statusText})`);
+      }
+
+      setSelectedBookId(null);
+      router.refresh();
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : "Delete failed unexpectedly.",
+      );
+    }
+  }
 
   return (
     <>
@@ -109,6 +134,7 @@ export default function BooksTable({
                     <button
                       type="button"
                       className="text-sm font-medium underline-offset-2 hover:underline"
+                      disabled={isDeleting}
                       onClick={() =>
                         setSelectedBookId((currentId) =>
                           currentId === book.id ? null : book.id,
@@ -144,6 +170,7 @@ export default function BooksTable({
               <button
                 type="button"
                 className="rounded border border-black/15 px-2 py-1 text-sm hover:bg-black/5"
+                disabled={isDeleting}
                 onClick={() => setSelectedBookId(null)}
               >
                 Close
@@ -171,6 +198,27 @@ export default function BooksTable({
                   ))}
                 </ul>
               )}
+            </div>
+            {deleteError ? (
+              <p className="mt-4 text-sm text-red-700">{deleteError}</p>
+            ) : null}
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isDeleting}
+                onClick={() => {
+                  if (!selectedBook) {
+                    return;
+                  }
+
+                  startDeleteTransition(() => {
+                    void handleDelete(selectedBook.id);
+                  });
+                }}
+              >
+                {isDeleting ? "Deleting..." : "Delete book"}
+              </button>
             </div>
           </article>
         </div>

@@ -10,7 +10,7 @@ function getApiBaseUrl(): string {
   return value;
 }
 
-function buildApiUrl(path: string): string {
+export function buildApiUrl(path: string): string {
   const normalizedBase = getApiBaseUrl().replace(/\/$/, "");
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${normalizedBase}${normalizedPath}`;
